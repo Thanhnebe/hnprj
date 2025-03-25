@@ -9,7 +9,10 @@ const dbUrl = `mongodb+srv://${process.env.DATABASE_USERNAME}:${process.env.DATA
 
 const connectDB = async () => {
 	try {
-		const connection = await mongoose.connect(dbUrl);
+		const connection = await mongoose.connect(dbUrl, {
+			useNewUrlParser: true,
+			useUnifiedTopology: true
+		});
 
 		console.log(`Connect to mongo db successfully!!!`);
 	} catch (error) {

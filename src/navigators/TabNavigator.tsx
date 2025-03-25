@@ -1,11 +1,11 @@
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import React, {ReactNode} from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import React, { ReactNode } from 'react';
 import ExploreNavigator from './ExploreNavigator';
 import EventNavigator from './EventNavigator';
-import {AddNewScreen} from '../screens';
+import { AddNewScreen } from '../screens';
 import MapNavigator from './MapNavigator';
 import ProfileNavigator from './ProfileNavigator';
-import {appColors} from '../constants/appColors';
+import { appColors } from '../constants/appColors';
 import {
   AddSquare,
   Calendar,
@@ -14,18 +14,19 @@ import {
   Location,
   User,
 } from 'iconsax-react-native';
-import {CircleComponent, TextComponent} from '../components';
-import {Platform, View} from 'react-native';
+import { CircleComponent, TextComponent } from '../components';
+import { Platform, View } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import {globalStyles} from '../styles/globalStyles';
+import { globalStyles } from '../styles/globalStyles';
 import DrawerNavigator from './DrawerNavigator';
+import OrderHistoryScreen from '../screens/product/OrderHistoryScreen';
 
 const TabNavigator = () => {
   const Tab = createBottomTabNavigator();
 
   return (
     <Tab.Navigator
-      screenOptions={({route}) => ({
+      screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
           height: Platform.OS === 'ios' ? 88 : 68,
@@ -33,7 +34,7 @@ const TabNavigator = () => {
           alignItems: 'center',
           backgroundColor: appColors.white,
         },
-        tabBarIcon: ({focused, color, size}) => {
+        tabBarIcon: ({ focused, color, size }) => {
           let icon: ReactNode;
           color = focused ? appColors.primary : appColors.gray5;
           size = 24;
@@ -45,7 +46,7 @@ const TabNavigator = () => {
             case 'Events':
               icon = <Calendar size={size} variant="Bold" color={color} />;
               break;
-            case 'Map':
+            case 'Order':
               icon = <Location size={size} variant="Bold" color={color} />;
               break;
             case 'Profile':
@@ -58,7 +59,7 @@ const TabNavigator = () => {
                   size={52}
                   styles={[
                     globalStyles.shadow,
-                    {marginTop: Platform.OS === 'ios' ? -50 : -60},
+                    { marginTop: Platform.OS === 'ios' ? -50 : -60 },
                   ]}>
                   <AddSquare size={24} color={appColors.white} variant="Bold" />
                 </CircleComponent>
@@ -70,7 +71,7 @@ const TabNavigator = () => {
         tabBarIconStyle: {
           marginTop: 8,
         },
-        tabBarLabel({focused}) {
+        tabBarLabel({ focused }) {
           return route.name === 'Add' ? null : (
             <TextComponent
               text={route.name}
@@ -87,7 +88,7 @@ const TabNavigator = () => {
       <Tab.Screen name="Explore" component={ExploreNavigator} />
       <Tab.Screen name="Events" component={EventNavigator} />
       <Tab.Screen name="Add" component={AddNewScreen} />
-      <Tab.Screen name="Map" component={MapNavigator} />
+      <Tab.Screen name="Order" component={OrderHistoryScreen} />
       <Tab.Screen name="Profile" component={ProfileNavigator} />
     </Tab.Navigator>
   );

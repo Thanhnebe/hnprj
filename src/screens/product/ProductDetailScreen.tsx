@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, ActivityIndicator, StyleSheet, ScrollView,Dimensions,TouchableOpacity  } from 'react-native';
+import { View, Text, Image, ActivityIndicator, StyleSheet, Dimensions, TouchableOpacity, Alert } from 'react-native';
 import { RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import axiosClient from '../../apis/axiosClient';
 import { appColors } from '../../constants/appColors';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -9,6 +10,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 // Định nghĩa kiểu dữ liệu cho navigation và route
 type RootStackParamList = {
   ProductDetail: { productId: string };
+  Cart: undefined; // Thêm màn hình giỏ hàng
 };
 
 type ProductDetailScreenNavigationProp = StackNavigationProp<RootStackParamList, 'ProductDetail'>;
@@ -18,9 +20,10 @@ type Props = {
   navigation: ProductDetailScreenNavigationProp;
   route: ProductDetailScreenRouteProp;
 };
+
 const { width, height } = Dimensions.get('window');
 
-const ProductDetailScreen: React.FC<Props> = ({ route }) => {
+const ProductDetailScreen: React.FC<Props> = ({ route, navigation }) => {
   const { productId } = route.params;
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -40,6 +43,30 @@ const ProductDetailScreen: React.FC<Props> = ({ route }) => {
     fetchProductDetails();
   }, [productId]);
 
+  // ✅ Hàm thêm sản phẩm vào giỏ hàng
+  const addToCart = async () => {
+    try {
+      // Lấy danh sách sản phẩm hiện có trong giỏ hàng
+      const cartData = await AsyncStorage.getItem('cart');
+      let cart = cartData ? JSON.parse(cartData) : [];
+
+      // Kiểm tra xem sản phẩm đã có trong giỏ hàng chưa
+      const existingProduct = cart.find((item: any) => item.id === product.id);
+      if (existingProduct) {
+        existingProduct.quantity += 1;
+      } else {
+        cart.push({ ...product, quantity: 1 });
+      }
+
+      // Lưu lại giỏ hàng vào AsyncStorage
+      await AsyncStorage.setItem('cart', JSON.stringify(cart));
+
+      Alert.alert('Thông báo', 'Sản phẩm đã được thêm vào giỏ hàng');
+    } catch (error) {
+      console.error('Lỗi khi thêm vào giỏ hàng:', error);
+    }
+  };
+
   if (loading) {
     return <ActivityIndicator size="large" color={appColors.danger} style={styles.loader} />;
   }
@@ -50,28 +77,31 @@ const ProductDetailScreen: React.FC<Props> = ({ route }) => {
 
   return (
     <View style={styles.container}>
-          {/* Ảnh sản phẩm chiếm 1/2 màn hình */}
-          <Image source={{ uri: product.imageUrl }} style={styles.image} />
+      {/* Ảnh sản phẩm */}
+      <Image source={{ uri: product.imageUrl }} style={styles.image} />
 
-          {/* Thông tin sản phẩm */}
-          <View style={styles.detailsContainer}>
-            <Text style={styles.name}>{product.name}</Text>
-            <Text style={styles.price}>{product.price.toLocaleString()} đ</Text>
-          </View>
+      {/* Thông tin sản phẩm */}
+      <View style={styles.detailsContainer}>
+        <Text style={styles.name}>{product.name}</Text>
+        <Text style={styles.price}>{product.price.toLocaleString()} đ</Text>
+      </View>
 
-          {/* Thanh công cụ bên dưới */}
-          <View style={styles.bottomBar}>
-            <TouchableOpacity style={styles.iconButton}>
-              <MaterialIcons name="comment" size={24} color={appColors.dark} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
-              <MaterialIcons name="shopping-cart" size={24} color={appColors.dark} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.buyNowButton}>
-              <Text style={styles.buyNowText}>Mua Ngay</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+      {/* Thanh công cụ bên dưới */}
+      <View style={styles.bottomBar}>
+        <TouchableOpacity style={styles.iconButton}>
+          <MaterialIcons name="comment" size={24} color={appColors.dark} />
+        </TouchableOpacity>
+
+        {/* Nút Thêm vào giỏ hàng */}
+        <TouchableOpacity style={styles.iconButton} onPress={addToCart}>
+          <MaterialIcons name="shopping-cart" size={24} color={appColors.dark} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.buyNowButton}>
+          <Text style={styles.buyNowText}>Mua Ngay</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 };
 
@@ -122,6 +152,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
 
 export default ProductDetailScreen;
